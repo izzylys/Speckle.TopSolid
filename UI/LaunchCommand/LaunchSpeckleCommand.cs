@@ -1,4 +1,6 @@
 ﻿using Speckle.DesktopUI;
+using System.Collections.Generic;
+using System.Linq;
 using TopSolid.Cad.Design.DB.Documents;
 using TopSolid.Kernel.DB.D3.Planes;
 using TopSolid.Kernel.DB.Parameters;
@@ -12,56 +14,58 @@ namespace EPFL.SpeckleTopSolid.UI.LaunchCommand
 {
     class LaunchSpeckleCommand : MenuCommand
     {
+        
         protected override void Invoke()
         {
-            //Show a message box to make sure the component is working
+            //Show a message box to make sure the component is working 
             MessageBox.Show("BOOM");
 
             //Command as in other Speckle connectors, for the moement it does nothing
-            Bootstrapper BootstrapperTopSolid = new Bootstrapper();
+            //Bootstrapper BootstrapperTopSolid = new Bootstrapper()
 
-            //Copied from the Revit Connector, replaces Revit by TopSolid
-             public class SpeckleTopSolidCommand : IExternalCommand
-        {
 
-            public static Bootstrapper Bootstrapper { get; set; }
-            public static ConnectorBindingsTopSolid Bindings { get; set; }
 
-            public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
-            {
-                OpenOrFocusSpeckle(commandData.Application);
-                return Result.Succeeded;
-            }
 
-            public static void OpenOrFocusSpeckle(UIApplication app)
-            {
-                try
-                {
-                    if (Bootstrapper != null)
-                    {
-                        Bootstrapper.Application.MainWindow.Show();
-                        return;
-                    }
+            StartOrShowPanel();
 
-                    Bootstrapper = new Bootstrapper()
-                    {
-                        Bindings = Bindings
-                    };
-
-                    Bootstrapper.Setup(Application.Current != null ? Application.Current : new Application());
-
-                    Bootstrapper.Application.Startup += (o, e) =>
-                    {
-                        var helper = new System.Windows.Interop.WindowInteropHelper(Bootstrapper.Application.MainWindow);
-                        helper.Owner = app.MainWindowHandle;
-                    };
-
-                }
-                catch (Exception e)
-                {
-
-                }
-            }
         }
-    }
+
+        //Just a simple copy/paste from ConnectorRhino
+        public static Bootstrapper Bootstrapper { get; set; }
+        internal void StartOrShowPanel()
+        {
+            if (Bootstrapper != null)
+            {
+                Bootstrapper.Application.MainWindow.Show();
+                return;
+            }
+
+            Bootstrapper = new Bootstrapper()
+            {
+                Bindings = new ConnectorBindingsTopSolid()
+            };
+
+            if (System.Windows.Application.Current == null)
+            {
+                new System.Windows.Application();
+            }
+
+            Bootstrapper.Setup(System.Windows.Application.Current);
+            Bootstrapper.Start(new string[] { });
+
+            Bootstrapper.Application.MainWindow.Initialized += (o, e) =>
+            {
+                ((ConnectorBindingsTopSolid)Bootstrapper.Bindings).GetFileContextAndNotifyUI();
+            };
+
+            Bootstrapper.Application.MainWindow.Closing += (object sender, System.ComponentModel.CancelEventArgs e) =>
+            {
+                Bootstrapper.Application.MainWindow.Hide();
+                e.Cancel = true;
+            };
+
+            //    //var helper = new System.Windows.Interop.WindowInteropHelper(Bootstrapper.Application.MainWindow);
+            //    //helper.Owner = RhinoApp.MainWindowHandle();
+            //}
+        }
 }
