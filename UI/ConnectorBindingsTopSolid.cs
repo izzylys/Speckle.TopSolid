@@ -15,10 +15,10 @@ using System.Threading.Tasks;
 using TopSolid.Kernel.DB.D3.Curves;
 using TopSolid.Kernel.DB.D3.Documents;
 using TopSolid.Kernel.DB.D3.Modeling.Documents;
-using TopSolid.Kernel.DB.D3.Sketches;
+using TopSolid.Kernel.DB.D3.Shapes;
 using TopSolid.Kernel.DB.Entities;
 using TopSolid.Kernel.DB.Parameters;
-using TopSolid.Kernel.G.D3.Curves;
+using TopSolid.Kernel.G.D3;
 
 namespace EPFL.SpeckleTopSolid.UI.LaunchCommand
 {
@@ -193,12 +193,17 @@ namespace EPFL.SpeckleTopSolid.UI.LaunchCommand
             commitObject = ConvertersSpeckleTopSolid.LineToSpeckle(new TopSolid.Kernel.G.D3.Curves.LineCurve(point1, point2));
             */
 
+            /* //successfully sent a BSpline curve that got converted into Rhino 
             //Getting the curve to send
             PositionedSketchEntity entity = (TopSolid.Kernel.UI.Application.CurrentDocument as ModelingDocument).SketchesFolderEntity.DeepPositionedSketches.First() as PositionedSketchEntity;
             BSplineCurve curve = new BSplineCurve();
             curve = entity.Geometry.Profiles.First().Segments.First().Geometry.GetBSplineCurve(false, false, TopSolid.Kernel.G.Precision.LinearPrecision);
             // commitObject   = ConvertersSpeckleTopSolid.CurveToSpeckle(curve);
+            */
 
+
+            ShapeEntity shape = (TopSolid.Kernel.UI.Application.CurrentDocument as ModelingDocument).ShapesFolderEntity.DeepEntities.First() as ShapeEntity;
+            Box box = shape.Geometry.FindBox();
             //if (conversionResult != null)
 
             var category = "default";
@@ -206,7 +211,8 @@ namespace EPFL.SpeckleTopSolid.UI.LaunchCommand
             {
                 commitObject[category] = new List<Base>();
             }
-            ((List<Base>)commitObject[category]).Add(ConvertersSpeckleTopSolid.CurveToSpeckle(curve));
+
+            ((List<Base>)commitObject[category]).Add(ConvertersSpeckleTopSolid.BoxToSpeckle(box));
 
 
 
@@ -217,8 +223,8 @@ namespace EPFL.SpeckleTopSolid.UI.LaunchCommand
           //onProgressAction: dict => UpdateProgress(dict, state.Progress),
           onErrorAction: (s, e) =>
           {
-                  //OperationErrors.Add(e); // TODO!
-                  state.Errors.Add(e);
+              //OperationErrors.Add(e); // TODO!
+              state.Errors.Add(e);
               state.CancellationTokenSource.Cancel();
           }
           );

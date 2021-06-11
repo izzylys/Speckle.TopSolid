@@ -205,7 +205,8 @@ namespace EPFL.SpeckleTopSolid.UI
 
         private static SpPlane PlaneToSpeckle(TsPlane tsPlane)
         {
-            SpPlane spPlane = new SpPlane(PointToSpeckle(tsPlane.Po), VectorToSpeckle(tsPlane.Vz), VectorToSpeckle(tsPlane.Vx), VectorToSpeckle(tsPlane.Vy));
+            SpPlane spPlane = new SpPlane(PointToSpeckle(tsPlane.Po), VectorToSpeckle(tsPlane.Vx), VectorToSpeckle(tsPlane.Vx), VectorToSpeckle(tsPlane.Vz));
+
             return spPlane;
         }
 
@@ -217,16 +218,28 @@ namespace EPFL.SpeckleTopSolid.UI
         }
 
 
-        private static SpBox BoxToSpeckle(TsBox tsBox)
+        public static SpBox BoxToSpeckle(TsBox tsBox)
         {
             //var u = units ?? ModelUnits;
-            // TsPlane tsPlane = new TsPlane (tsBox.Po)
-            var speckleBox = new SpBox();
-            //speckleBox.area = tsbox.Area;
+            //Get the Center of the box
+            //double X= 0, Y = 0, Z= 0;
+            //foreach (TSPoint p in tsBox.Corners)
+            //{
+            //    X += p.X / tsBox.Corners.Count;
+            //    Y += p.Y / tsBox.Corners.Count;
+            //    Z += p.Z / tsBox.Corners.Count;
+            //}
+
+            //TSPoint Obox = new TSPoint(X, Y, Z);
+
+
+            TsPlane tsPlane = tsBox.Frame.Pxy;
+            tsPlane.Po = new TSPoint(tsPlane.Po.X + tsBox.Hx, tsPlane.Po.Y + tsBox.Hy, tsPlane.Po.Z + tsBox.Hz);
+
+
+            var speckleBox = new SpBox(PlaneToSpeckle(tsPlane), new Interval(tsPlane.Po.X, tsPlane.Po.X + 2 * tsBox.Hx), new Interval(tsPlane.Po.Y, tsPlane.Po.Y + 2 * tsBox.Hy), new Interval(tsPlane.Po.Z, tsPlane.Po.Z + 2 * tsBox.Hz));
+            speckleBox.area = (tsBox.Hx * 2 * tsBox.Hy * 2 * 2) + (tsBox.Hx * 2 * tsBox.Hz * 2 * 2) + (tsBox.Hz * 2 * tsBox.Hy * 2 * 2);
             speckleBox.volume = tsBox.Volume;
-
-            var a = tsBox.Frame.Ax.Vx;
-
 
             return speckleBox;
         }
